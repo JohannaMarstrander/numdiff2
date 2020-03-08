@@ -30,13 +30,13 @@ class Problem:
 
     def F_star(self, U, u_star0, u_star1):
         # print(U)
-        F = self.r / 2 * U[:-2] + (1 - self.r) * U[1:-1] + self.r / 2 * U[2:] + self.k * f(U[1:-1])
+        F = self.r / 2 * U[:-2] + (1 - self.r) * U[1:-1] + self.r / 2 * U[2:] + self.k * self.f(U[1:-1])
         F[0] += self.r/2 * u_star0
         F[-1] += self.r/2 * u_star1
         return F
 
 
-def solve(prob):
+def solve(prob,a):
     U = np.zeros((prob.N + 1, prob.M + 1))
     U[0] = prob.u(0, prob.x)
     U[:, 0] = prob.g0(prob.t, prob.a)
@@ -44,7 +44,9 @@ def solve(prob):
 
     A_star = prob.A_star()
     for n in range(prob.N):
-        F_star = prob.F_star(U[n],U[n + 1, 0],U[n + 1, -1])
+        ustar0=(U[n + 1, 0] + a*prob.k/2 * U[n,0])/(1+a*prob.k/2)
+        ustar1 = (U[n + 1, -1] + a * prob.k / 2 * U[n, -1])/(1+a*prob.k/2)
+        F_star = prob.F_star(U[n],ustar0,ustar1)
         U_star = spsolve(A_star, F_star)
         U[n + 1, 1:-1] = U_star + prob.k / 2 * (f(U_star) - f(U[n, 1:-1]))
     return U
@@ -61,14 +63,14 @@ def u(t, x):
 
 
 
-a = Problem(200, 50, 0, 1, 1, 0.125, u, u, u, f)
+b = Problem(200, 50, 0, 1, 1, 0.125, u, u, u, f)
 #b=Problem(5, 400, 0, 1, 1, 0.1, u, u, u, f)
-U1 = solve(a)
+U1 = solve(b,0.5)
 #U2= solve(b)
 #print(U)
 
 
-xx,tt=np.meshgrid(a.x,a.t)
+xx,tt=np.meshgrid(b.x,b.t)
 #print(u(tt,xx))
 
 def plott(x, y, Z):
