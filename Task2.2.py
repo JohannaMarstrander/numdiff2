@@ -112,10 +112,10 @@ def gI(x):
     return 0*x
 
 def uS(x):
-    return 0.9 + 0*x
+    return 1 + 0*x
 
 def uI(x):
-    return 0.1*x*2
+    return 0*x
 
 
 s = Problem2(40, 180, 0, 1, 1, mu_S, gS, gS, uS, fS, params)
