@@ -82,7 +82,7 @@ def ustar(U, k, a, b, n):
     return ustar0, ustar1
         
 def A_star(r, M):
-    A = diags([r / 2, 1 + r, -r / 2], [-1, 0, 1], shape=(M - 1, M - 1))
+    A = diags([-r / 2, 1 + r, -r / 2], [-1, 0, 1], shape=(M - 1, M - 1))
     return A.tocsr()
 
 def F_star(r,k, U, u_star0, u_star1, f, params, other):
@@ -129,9 +129,9 @@ def fI(I, S, params):
 
 
 prob = Problem2(50, 200, 0, 1, 1, mu_S, mu_I, St0, It0, Sx0, Sx0, Ix0, Ix0, fS, fI, params, tot)
-U1 = solve(prob, A_star, F_star, ustar)
+S1,I1 = solve(prob, A_star, F_star, ustar)
 
 xx,tt=np.meshgrid(prob.x,prob.t)
-plott(xx,tt,U1)
+plott(xx,tt,I1)
 
 
