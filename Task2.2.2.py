@@ -94,7 +94,7 @@ def F_star(r,k, U, u_star0, u_star1, f, params, other):
 beta = 3.0
 gamma = 1.0
 mu_S = 0.001
-mu_I = 0.001
+mu_I = 0.01
 tot = 0
 
 params = [beta, gamma]    
@@ -128,7 +128,7 @@ def fI(I, S, params):
     return params[0]*np.multiply(S, I) - params[1]*I
 
 
-prob = Problem2(50, 200, 0, 1, 1, mu_S, mu_I, St0, It0, Sx0, Sx0, Ix0, Ix0, fS, fI, params, tot)
+prob = Problem2(50, 200, 0, 1, 6, mu_S, mu_I, St0, It0, Sx0, Sx0, Ix0, Ix0, fS, fI, params, tot)
 S1,I1 = solve(prob, A_star, F_star, ustar)
 
 xx,tt=np.meshgrid(prob.x,prob.t)
