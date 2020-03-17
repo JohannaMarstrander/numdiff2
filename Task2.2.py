@@ -108,20 +108,15 @@ def solve(p, A_star, F_star, ustar, initialize):
     IA_star = A_star(p.rI, p.M)
     for n in tqdm(range(p.N)):
         Sustar, Iustar = ustar(S, p.k, -p.params[0] * I[n], n), ustar(I, p.k, p.params[0] * S[n] - p.params[1],n)
-         #print(Iustar.reshape(p.M+1,p.M+1))
         SF_star = F_star(p.rS, p.k, p.M, S[n], Sustar, p.fS, p.params, I[n])
         IF_star = F_star(p.rI, p.k,p.M, I[n], Iustar, p.fI, p.params, S[n])
-         #print(IF_star.reshape(p.M+1,p.M+1))
         SU_star = spsolve(SA_star, SF_star)
         IU_star = spsolve(IA_star, IF_star)
-
-
         S[n + 1, :] = SU_star + p.k / 2 * (
                  p.fS(SU_star, I[n], p.params) - p.fS(S[n], I[n], p.params))
         I[n + 1, :] = IU_star + p.k / 2 * (
                  p.fI(IU_star, S[n], p.params) - p.fI(I[n], S[n], p.params))
         Sm[n+1,:]=S[n+1,:].reshape(p.M+1,p.M+1)
-         #print(Sm[n+1])
         Im[n + 1, :] = I[n + 1, :].reshape(p.M + 1, p.M + 1)
     return Sm, Im
 
