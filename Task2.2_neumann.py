@@ -64,7 +64,7 @@ def plott(x, y, Z):
 
 
 class Problem2:
-    def __init__(self, M, N, x0, xM, T, muS, muI, St0, It0, fS, fI, params):
+    def __init__(self, M, N, x0, xM, T, muS, muI, St0, It0, fS, fI, beta, gamma):
         self.M = M  # number of steps in space
         self.h = (xM - x0) / M  # step length in space
         self.N = N  # number of steps in time
@@ -75,7 +75,8 @@ class Problem2:
         self.It0 = It0  # t = 0
         self.fS = fS
         self.fI = fI
-        self.params = params
+        self.beta = beta
+        self.gamma = gamma
         self.t = np.linspace(0, T, N + 1)
         self.x = np.linspace(x0, xM, M + 1)
 
@@ -88,24 +89,22 @@ def solve(p, A_star, F_star):
     SA_star = A_star(p.rS, p.M)
     IA_star = A_star(p.rI, p.M)
     for n in tqdm(range(p.N)):
-        SF_star = F_star(p.rS, p.k, p.M, S[n],  p.fS, p.params, I[n])
-        IF_star = F_star(p.rI, p.k, p.M, I[n],  p.fI, p.params, S[n])
+        SF_star = F_star(p.rS, p.k, p.M, S[n], p.fS, p.beta, p.gamma, I[n])
+        IF_star = F_star(p.rI, p.k, p.M, I[n], p.fI, p.beta, p.gamma, S[n])
         SU_star = spsolve(SA_star, SF_star)
         IU_star = spsolve(IA_star, IF_star)
         S[n + 1, :] = SU_star + p.k / 2 * (
-                p.fS(SU_star, I[n], p.params) - p.fS(S[n], I[n], p.params))
+                p.fS(SU_star, I[n],  p.beta, p.gamma) - p.fS(S[n], I[n], p.beta, p.gamma))
         I[n + 1, :] = IU_star + p.k / 2 * (
-                p.fI(IU_star, S[n], p.params) - p.fI(I[n], S[n], p.params))
+                p.fI(IU_star, S[n], p.beta, p.gamma) - p.fI(I[n], S[n], p.beta, p.gamma))
         Sm[n + 1, :] = S[n + 1, :].reshape(p.M + 1, p.M + 1)
         Im[n + 1, :] = I[n + 1, :].reshape(p.M + 1, p.M + 1)
     return Sm, Im
 
 
-
-
 def A_star(r, M):
     A = np.zeros(((M + 1) ** 2, (M + 1) ** 2))
-    np.fill_diagonal(A, 1 + r * r)
+    np.fill_diagonal(A, 1 + 2* r)
     for i in range(1, M):
         for j in range(1, M):
             A[I_map(i, j, M), I_map(i - 1, j, M)] = -r / 2
@@ -144,38 +143,43 @@ def A_star(r, M):
     return sparse.csr_matrix(A)
 
 
-def F_star(r, k, M, U, f, params, other):
+def F_star(r, k, M, U, f, beta, gamma, other):
     F = np.zeros((M + 1) ** 2)
     for i in range(1, M):
         for j in range(1, M):
             F[I_map(i, j, M)] = r / 2 * U[I_map(i - 1, j, M)] + r / 2 * U[I_map(i + 1, j, M)] + r / 2 * U[
                 I_map(i, j - 1, M)] + r / 2 * U[I_map(i, j + 1, M)] + (1 - 2 * r) * U[I_map(i, j, M)] + k * f(
                 U[I_map(i, j, M)],
-                other[I_map(i, j, M)], params)
+                other[I_map(i, j, M)], beta[I_map(i, j, M)], gamma)
 
     for j in range(1, M):
         F[I_map(0, j, M)] = r * U[I_map(1, j, M)] + r / 2 * U[I_map(0, j - 1, M)] + r / 2 * U[I_map(0, j + 1, M)] \
-                            + (1 - 2 * r) * U[I_map(0, j, M)] + k * f(U[I_map(0, j, M)], other[I_map(0, j, M)], params)
+                            + (1 - 2 * r) * U[I_map(0, j, M)] + k * f(U[I_map(0, j, M)], other[I_map(0, j, M)],
+                                                                      beta[I_map(0, j, M)], gamma)
         F[I_map(M, j, M)] = r * U[I_map(M - 1, j, M)] + r / 2 * U[I_map(M, j - 1, M)] + r / 2 * U[I_map(M, j + 1, M)] \
-                            + (1 - 2 * r) * U[I_map(M, j, M)] + k * f(U[I_map(M, j, M)], other[I_map(M, j, M)], params)
+                            + (1 - 2 * r) * U[I_map(M, j, M)] + k * f(U[I_map(M, j, M)], other[I_map(M, j, M)],
+                                                                      beta[I_map(M, j, M)], gamma)
 
     for i in range(1, M):
         F[I_map(i, 0, M)] = r * U[I_map(i, 1, M)] + r / 2 * U[I_map(i - 1, 0, M)] + r / 2 * U[I_map(i + 1, 0, M)] \
-                            + (1 - 2 * r) * U[I_map(i, 0, M)] + k * f(U[I_map(i, 0, M)], other[I_map(i, 0, M)], params)
+                            + (1 - 2 * r) * U[I_map(i, 0, M)] + k * f(U[I_map(i, 0, M)], other[I_map(i, 0, M)],
+                                                                      beta[I_map(i, 0, M)], gamma)
         F[I_map(i, M, M)] = r * U[I_map(i, M - 1, M)] + r / 2 * U[I_map(i - 1, M - 1, M)] + r / 2 * U[
             I_map(i + 1, M - 1, M)] \
-                            + (1 - 2 * r) * U[I_map(i, M, M)] + k * f(U[I_map(i, M, M)], other[I_map(i, M, M)], params)
+                            + (1 - 2 * r) * U[I_map(i, M, M)] + k * f(U[I_map(i, M, M)], other[I_map(i, M, M)],
+                                                                      beta[I_map(i, M, M)], gamma)
 
     F[I_map(0, 0, M)] = r * U[I_map(1, 0, M)] + r * U[I_map(0, 1, M)] + (1 - 2 * r) * U[I_map(0, 0, M)] \
-                        + k * f(U[I_map(0, 0, M)], other[I_map(0, 0, M)], params)
+                        + k * f(U[I_map(0, 0, M)], other[I_map(0, 0, M)], beta[I_map(0, 0, M)], gamma)
     F[I_map(M, 0, M)] = r * U[I_map(M - 1, 0, M)] + r * U[I_map(M, M - 1, M)] + (1 - 2 * r) * U[I_map(M, 0, M)] \
-                        + k * f(U[I_map(M, 0, M)], other[I_map(M, 0, M)], params)
+                        + k * f(U[I_map(M, 0, M)], other[I_map(M, 0, M)], beta[I_map(M, 0, M)], gamma)
     F[I_map(0, M, M)] = r * U[I_map(0, M - 1, M)] + r * U[I_map(1, M, M)] + (1 - 2 * r) * U[I_map(0, M, M)] \
-                        + k * f(U[I_map(0, M, M)], other[I_map(0, M, M)], params)
+                        + k * f(U[I_map(0, M, M)], other[I_map(0, M, M)], beta[I_map(0, M, M)], gamma)
     F[I_map(M, M, M)] = r * U[I_map(M, M - 1, M)] + r * U[I_map(M - 1, M, M)] + (1 - 2 * r) * U[I_map(M, M, M)] \
-                        + k * f(U[I_map(M, M, M)], other[I_map(M, M, M)], params)
+                        + k * f(U[I_map(M, M, M)], other[I_map(M, M, M)], beta[I_map(M, M, M)], gamma)
 
     return F
+
 
 beta = 3.0
 gamma = 1.0
@@ -201,15 +205,18 @@ def It0(x):
     return t0
 
 
-def fS(S, I, params):
-    return (-params[0] * np.multiply(S, I))
+def fS(S, I, beta,gamma):
+    return (-beta * S*I)
 
 
-def fI(I, S, params):
-    return params[0] * np.multiply(S, I) - params[1] * I
+def fI(I, S, beta,gamma):
+    return beta *S* I - gamma * I
 
+beta=3*np.ones((40+1)**2)
+#beta[(40+1)**2//3] = 10
+#beta=2
 
-prob = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, params)
+prob = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, beta, gamma)
 S1, I1 = solve(prob, A_star, F_star)
 
 xx, yy = np.meshgrid(prob.x, prob.x)
