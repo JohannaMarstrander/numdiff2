@@ -212,12 +212,17 @@ def fS(S, I, beta,gamma):
 
 def fI(I, S, beta,gamma):
     return beta *S* I - gamma * I
+#First example in 2D
+beta2=2*np.ones((40+1)**2)
+index_list = [I_map(i, j, 40) for i in range(0,20) for j in range (0,20)]
+beta2[index_list] = 5
 
+#Last example
 beta=2*np.ones((40+1)**2)
 index_list = [I_map(i, j, 40) for i in range(10,30) for j in range (10,30)]
-beta[index_list] = 4
+beta[index_list] = 3.5
 
-prob = Problem2(40, 100, 0, 1.5, 12, mu_S, mu_I, St0, It0, fS, fI, beta, gamma)
+prob = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, beta2, gamma)
 S1, I1 = solve(prob, A_star, F_star)
 print(len(I1))
 xx, yy = np.meshgrid(prob.x, prob.x)
