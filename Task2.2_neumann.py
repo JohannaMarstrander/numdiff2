@@ -56,6 +56,7 @@ def plott(x, y, Z):
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.view_init(30, 110)
+    ax.set_zlim(0,0.5)
 
     # Add a color bar which maps values to colors.
     fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -182,7 +183,7 @@ def F_star(r, k, M, U, f, beta, gamma, other):
 
 
 beta = 3.0
-gamma = 1.0
+gamma = 1
 mu_S = 0.001
 mu_I = 0.001
 
@@ -212,15 +213,24 @@ def fS(S, I, beta,gamma):
 def fI(I, S, beta,gamma):
     return beta *S* I - gamma * I
 
-beta=3*np.ones((40+1)**2)
-#beta[(40+1)**2//3] = 10
-#beta=2
+beta=2*np.ones((40+1)**2)
+index_list = [I_map(i, j, 40) for i in range(10,30) for j in range (10,30)]
+beta[index_list] = 4
 
-prob = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, beta, gamma)
+prob = Problem2(40, 100, 0, 1.5, 12, mu_S, mu_I, St0, It0, fS, fI, beta, gamma)
 S1, I1 = solve(prob, A_star, F_star)
-
+print(len(I1))
 xx, yy = np.meshgrid(prob.x, prob.x)
 plott(xx, yy, I1[0])
-plott(xx, yy, I1[1])
+plott(xx, yy, I1[10])
+plott(xx, yy, I1[20])
+plott(xx, yy, I1[30])
+plott(xx, yy, I1[40])
+plott(xx, yy, I1[50])
+plott(xx, yy, I1[60])
+plott(xx, yy, I1[70])
+plott(xx, yy, I1[80])
+plott(xx, yy, I1[90])
 plott(xx, yy, I1[-1])
-plot_2D_animation(xx, yy, I1, title='', duration=10, zlim=(-1, 1))
+#plott(xx, yy, I1[-1])
+#plot_2D_animation(xx, yy, I1, title='', duration=10, zlim=(-1, 1))
