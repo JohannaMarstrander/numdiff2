@@ -148,3 +148,55 @@ xx, tt = np.meshgrid(prob.x, prob.t)
 plott(xx, tt, I1)
 plott(xx,tt,S1)
 
+
+#Convergence order time
+N_list = [20,40,80,160]
+E_time =[]
+k_list = []
+
+for n in N_list:
+    b = Problem(400, n, 0, 1, 0.01, -0.375, u, u, u, f)
+    U1 = solve(b,0.5)
+    xx,tt=np.meshgrid(b.x,b.t)
+    u_ex=u(tt,xx)
+    error = U1[-1,:] -u_ex[-1,:]
+    if n == 80:
+        plott(xx,tt,u_ex)
+    E_time.append(np.linalg.norm(error, ord=np.inf))
+    k_list.append(1 / n)
+    print(np.max(np.absolute(error)))
+    
+print(E_time)
+order = np.polyfit(np.log(k_list), np.log(E_time), 1)[0]
+print("order", order)
+k_list = np.array(k_list)
+
+plt.figure()
+plt.loglog(k_list, E_time, 'o-')
+plt.show()
+
+#Convergence order space
+M_list = [20,40,80,160,320]
+E_space =[]
+h_list = []
+
+for m in M_list:
+    b = Problem(m, 400, 0, 1, 0.01, -0.375, u, u, u, f)
+    U1 = solve(b,0.5)
+    xx,tt=np.meshgrid(b.x,b.t)
+    u_ex=u(tt,xx)
+    error = U1[-1,:] -u_ex[-1,:]
+    if m == 80:
+        plott(xx,tt,u_ex)
+    E_space.append(np.linalg.norm(error, ord=np.inf))
+    h_list.append(1 / m)
+    print(np.max(np.absolute(error)))
+    
+print(E_space)
+order = np.polyfit(np.log(h_list), np.log(E_space), 1)[0]
+print("order", order)
+h_list = np.array(h_list)
+
+plt.figure()
+plt.loglog(h_list, E_space, 'o-')
+plt.show()

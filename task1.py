@@ -72,47 +72,64 @@ def solve(prob,a):
 def f(x):
     return 0.5 * x
 
-
 def u(t, x):
-    return np.exp(-2*x - t)
+    return np.exp(2*x + t)
 
 
-M_list = [20,40,80,160]
-E =[]
+#Convergence order time
+N_list = [5,10,20,30,40,80]
+E_time =[]
+k_list = []
+
+for n in N_list:
+    b = Problem(3000, n, 0, 1, 0.1, 0.125, u, u, u, f)
+    U1 = solve(b,0.5)
+    xx,tt=np.meshgrid(b.x,b.t)
+    u_ex=u(tt,xx)
+    error = U1[-1,:] - u_ex[-1,:]
+    if n == 80:
+        plott(xx,tt,u_ex)
+    E_time.append(np.linalg.norm(error, ord=np.inf))
+    k_list.append(1 / n)
+    print(np.max(np.absolute(error)))
+    
+print(E_time)
+order = np.polyfit(np.log(k_list), np.log(E_time), 1)[0]
+print("order", order)
+k_list = np.array(k_list)
+
+plt.figure()
+plt.loglog(k_list, E_time, 'o-')
+plt.show()
+
+#Convergence order space
+M_list = [20,40,80,160,320]
+E_space =[]
 h_list = []
 
 for m in M_list:
-    b = Problem(40, m, 0, 1, 0.01, -0.375, u, u, u, f)
+    b = Problem(m, 400, 0, 1, 0.01, 0.125, u, u, u, f)
     U1 = solve(b,0.5)
     xx,tt=np.meshgrid(b.x,b.t)
     u_ex=u(tt,xx)
     error = U1[-1,:] -u_ex[-1,:]
-    if m == 80:
-        plott(xx,tt,u_ex)
-    E.append(np.linalg.norm(error, ord=np.inf))
+    #if m == 80:
+        #plott(xx,tt,u_ex)
+    E_space.append(np.linalg.norm(error, ord=np.inf))
     h_list.append(1 / m)
-    print(np.max(np.absolute(error)))
-#U2= solve(b)
-#print(U)
-print(E)
-order = np.polyfit(np.log(h_list), np.log(E), 1)[0]
-print("order", order)
+    
+order = np.polyfit(np.log(h_list), np.log(E_space), 1)[0]
+#print("order", order)
 h_list = np.array(h_list)
 
-plt.figure()
-plt.loglog(h_list, E, 'o-')
-plt.show()
+#plt.figure()
+#plt.loglog(h_list, E_space, 'o-')
+#plt.show()
 
 #print(u(tt,xx))
-
-
-
 #plott(xx,tt,U1-U2)
 #print(xx.shape,tt.shape,U.shape)
 #plott(xx,tt,U1)
 #plott(xx,tt,u_ex)
-error=U1-u_ex
 #plott(xx,tt,error)
-
-print(np.max(np.absolute(error)))
 
