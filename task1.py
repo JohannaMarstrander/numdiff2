@@ -77,12 +77,12 @@ def u(t, x):
 
 
 #Convergence order time
-N_list = [5,10,20,30,40,80]
+N_list = [10,20,40,80, 120]
 E_time =[]
 k_list = []
 
 for n in N_list:
-    b = Problem(3000, n, 0, 1, 0.1, 0.125, u, u, u, f)
+    b = Problem(400, n, 0, 1, 1, 0.125, u, u, u, f)
     U1 = solve(b,0.5)
     xx,tt=np.meshgrid(b.x,b.t)
     u_ex=u(tt,xx)
@@ -108,7 +108,7 @@ E_space =[]
 h_list = []
 
 for m in M_list:
-    b = Problem(m, 400, 0, 1, 0.01, 0.125, u, u, u, f)
+    b = Problem(m, 400, 0, 1, 1, 0.125, u, u, u, f)
     U1 = solve(b,0.5)
     xx,tt=np.meshgrid(b.x,b.t)
     u_ex=u(tt,xx)
