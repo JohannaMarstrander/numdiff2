@@ -77,7 +77,8 @@ def u(t, x):
 
 
 #Convergence order time
-N_list = [10,20,40,80, 120]
+N_list = [10, 20, 35, 60, 100]
+#N_list = [10,20,40,80, 120]
 E_time =[]
 k_list = []
 
@@ -87,7 +88,7 @@ for n in N_list:
     xx,tt=np.meshgrid(b.x,b.t)
     u_ex=u(tt,xx)
     error = U1[-1,:] - u_ex[-1,:]
-    if n == 80:
+    if n == 60:
         plott(xx,tt,u_ex)
     E_time.append(np.linalg.norm(error, ord=np.inf))
     k_list.append(1 / n)
@@ -95,15 +96,23 @@ for n in N_list:
     
 print(E_time)
 order = np.polyfit(np.log(k_list), np.log(E_time), 1)[0]
-print("order", order)
+print("order time", order)
 k_list = np.array(k_list)
 
+
+
 plt.figure()
-plt.loglog(k_list, E_time, 'o-')
+plt.loglog(k_list, E_time, 'o-', label = "Order = 2.08")
+plt.loglog(k_list, k_list**2, 'r-')
+plt.title("Time convergence error")
+plt.xlabel("k")
+plt.ylabel("Error")
+plt.legend(loc = 'upper left')
 plt.show()
 
 #Convergence order space
-M_list = [20,40,80,160,320]
+M_list = [10, 20, 35, 60, 100]
+#M_list = [20,40,80,160,320]
 E_space =[]
 h_list = []
 
@@ -119,12 +128,17 @@ for m in M_list:
     h_list.append(1 / m)
     
 order = np.polyfit(np.log(h_list), np.log(E_space), 1)[0]
-#print("order", order)
+print("order space", order)
 h_list = np.array(h_list)
 
-#plt.figure()
-#plt.loglog(h_list, E_space, 'o-')
-#plt.show()
+plt.figure()
+plt.loglog(h_list, E_space, 'o-', label = "Order = 2.00")
+plt.loglog(h_list, h_list**2, 'r-')
+plt.title("Space convergence error")
+plt.xlabel("h")
+plt.ylabel("Error")
+plt.legend(loc = 'upper left')
+plt.show()
 
 #print(u(tt,xx))
 #plott(xx,tt,U1-U2)
