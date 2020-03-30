@@ -17,7 +17,7 @@ def plott(x, y, Z):
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')
-    ax.view_init(30, 110)
+    ax.view_init(20, 92)
 
     # Add a color bar which maps values to colors.
     fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -97,10 +97,10 @@ def F_star(r, k, U, u_star0, u_star1, f, params, other):
     return F
 
 
-beta = 3.0
+beta = 0.5
 gamma = 1.0
-mu_S = 0.001
-mu_I = 0.01
+mu_S = 0.005
+mu_I = 0.005
 tot = 0
 
 params = [beta, gamma]
@@ -141,12 +141,12 @@ def fI(I, S, params):
 
 
 
-prob = Problem2(50, 200, 0, 1, 6, mu_S, mu_I, St0, It0, Sx0, Sx0, Ix0, Ix0, fS, fI, params, tot)
+prob = Problem2(50, 300, 0, 1, 4, mu_S, mu_I, St0, It0, Sx0, Sx0, Ix0, Ix0, fS, fI, params, tot)
 S1, I1 = solve(prob, A_star, F_star, ustar)
 
 xx, tt = np.meshgrid(prob.x, prob.t)
 plott(xx, tt, I1)
-plott(xx,tt,S1)
+
 
 
 

@@ -6,6 +6,7 @@ from scipy.sparse.linalg import spsolve
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+from matplotlib.colors import Normalize as norm
 from tqdm import tqdm
 import matplotlib.animation as animation
 
@@ -51,11 +52,11 @@ def plott(x, y, Z):
     ax = fig.gca(projection='3d')
 
     surf = ax.plot_surface(x, y, Z, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False)
+                           linewidth=0, antialiased=False, norm=norm(vmin=0, vmax=0.3))
 
     ax.set_xlabel('x')
     ax.set_ylabel('y')
-    ax.view_init(30, 110)
+    ax.view_init(40, 92)
     ax.set_zlim(0,0.5)
 
     # Add a color bar which maps values to colors.
@@ -213,16 +214,23 @@ def fS(S, I, beta,gamma):
 def fI(I, S, beta,gamma):
     return beta *S* I - gamma * I
 #First example in 2D
+beta1 = 3*np.ones((40+1)**2)
+
+#Second example in 2D
 beta2=2*np.ones((40+1)**2)
 index_list = [I_map(i, j, 40) for i in range(0,20) for j in range (0,20)]
-beta2[index_list] = 5
+beta2[index_list] = 4
 
 #Last example
-beta=2*np.ones((40+1)**2)
+beta3=2*np.ones((40+1)**2)
 index_list = [I_map(i, j, 40) for i in range(10,30) for j in range (10,30)]
-beta[index_list] = 3.5
+beta3[index_list] = 3.5
 
-prob = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, beta2, gamma)
+prob1 = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, beta1, gamma)
+prob2 = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, beta2, gamma)
+prob3 = Problem2(40, 100, 0, 1, 10, mu_S, mu_I, St0, It0, fS, fI, beta3, gamma)
+
+prob = prob3
 S1, I1 = solve(prob, A_star, F_star)
 print(len(I1))
 xx, yy = np.meshgrid(prob.x, prob.x)
