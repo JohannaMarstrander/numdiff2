@@ -21,7 +21,6 @@ def plott(x, y, Z):
 
     # Add a color bar which maps values to colors.
     fig.colorbar(surf, shrink=0.5, aspect=5)
-
     plt.show()
 
 class Problem:
@@ -42,7 +41,6 @@ class Problem:
 
     def A_star(self):
         A = diags([-self.r / 2, 1 + self.r, -self.r / 2], [-1, 0, 1], shape=(self.M - 1, self.M - 1))
-        #print(A.toarray())
         return A.tocsr()
 
     def F_star(self, U, u_star0, u_star1):
@@ -72,18 +70,18 @@ def solve(prob,a):
 def f(x):
     return 0.5 * x
 
+
 def u(t, x):
-    return np.exp(2*x + t)
+    return np.exp(-0.5 * t) * np.sin(x)
 
 
 #Convergence order time
 N_list = [10, 20, 35, 60, 100]
-#N_list = [10,20,40,80, 120]
 E_time =[]
 k_list = []
 
 for n in N_list:
-    b = Problem(400, n, 0, 1, 1, 0.125, u, u, u, f)
+    b = Problem(400, n, 0, 1, 1, 1, u, u, u, f)
     U1 = solve(b,0.5)
     xx,tt=np.meshgrid(b.x,b.t)
     u_ex=u(tt,xx)
@@ -103,7 +101,7 @@ k_list = np.array(k_list)
 
 plt.figure()
 plt.loglog(k_list, E_time, 'o-', label = "Order = 2.08")
-plt.loglog(k_list, k_list**2, 'r-')
+plt.loglog(k_list, 0.008*k_list**2, 'r-')
 plt.title("Time convergence error")
 plt.xlabel("k")
 plt.ylabel("Error")
@@ -112,18 +110,15 @@ plt.show()
 
 #Convergence order space
 M_list = [10, 20, 35, 60, 100]
-#M_list = [20,40,80,160,320]
 E_space =[]
 h_list = []
 
 for m in M_list:
-    b = Problem(m, 400, 0, 1, 1, 0.125, u, u, u, f)
+    b = Problem(m, 400, 0, 1, 1, 1, u, u, u, f)
     U1 = solve(b,0.5)
     xx,tt=np.meshgrid(b.x,b.t)
     u_ex=u(tt,xx)
     error = U1[-1,:] -u_ex[-1,:]
-    #if m == 80:
-        #plott(xx,tt,u_ex)
     E_space.append(np.linalg.norm(error, ord=np.inf))
     h_list.append(1 / m)
     
@@ -133,17 +128,11 @@ h_list = np.array(h_list)
 
 plt.figure()
 plt.loglog(h_list, E_space, 'o-', label = "Order = 2.00")
-plt.loglog(h_list, h_list**2, 'r-')
+plt.loglog(h_list, 0.01*h_list**2, 'r-')
 plt.title("Space convergence error")
 plt.xlabel("h")
 plt.ylabel("Error")
 plt.legend(loc = 'upper left')
 plt.show()
 
-#print(u(tt,xx))
-#plott(xx,tt,U1-U2)
-#print(xx.shape,tt.shape,U.shape)
-#plott(xx,tt,U1)
-#plott(xx,tt,u_ex)
-#plott(xx,tt,error)
 
